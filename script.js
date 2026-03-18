@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // ===========================
     const templates = {
         '1.jpg': {
-            name: 'تصميم 1',
+            name: 'فاتح',
             type: 'portrait',          // 1080 × 1920
             canvasW: 1080, canvasH: 1920,
             textPosition: { x: 540, y: 1420 },
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
             fontStyle: 'bold'
         },
         '2.jpg': {
-            name: 'تصميم 2',
+            name: 'غامق',
             type: 'portrait',
             canvasW: 1080, canvasH: 1920,
             textPosition: { x: 540, y: 1420 },
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
             fontStyle: 'bold'
         },
         '3.jpg': {
-            name: 'تصميم 3',
+            name: 'فاتح',
             type: 'square',            // 1080 × 1080
             canvasW: 1080, canvasH: 1080,
             textPosition: { x: 540, y: 860 },
@@ -92,7 +92,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         backgroundImage = new Image();
-        backgroundImage.crossOrigin = 'anonymous';
         backgroundImage.onload = drawCanvas;
         backgroundImage.onerror = function () {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -284,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function () {
         popup.querySelector('.popup-close').addEventListener('click', closePopup);
         popupContainer.addEventListener('click', e => { if (e.target === popupContainer) closePopup(); });
 
-        if (duration && type !== 'confirm') setTimeout(closePopup, duration);
+        if (duration && type !== 'confirm');
     }
 
     function closePopup() {
