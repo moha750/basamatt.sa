@@ -1,3 +1,86 @@
+// ===========================
+// إعدادات Supabase
+// ===========================
+const SUPABASE_URL = 'https://nnlhkfeybyhvlinbqqfa.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ubGhrZmV5YnlodmxpbmJxcWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1ODIyODcsImV4cCI6MjA4NDE1ODI4N30.VhQgdxHt6YOQu8IJ-eni6_9qIeua1ZM3hx8hVe3YgZg';
+
+let supabaseClient;
+if (typeof window.supabase !== 'undefined') {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+// ===========================
+// وظائف العدادات
+// ===========================
+async function incrementStat(statType) {
+    if (!supabaseClient) return;
+    try {
+        const { data, error } = await supabaseClient.rpc('increment_stat', {
+            p_stat_type: statType
+        });
+        if (error) throw error;
+        return data;
+    } catch (err) {
+        console.error('خطأ في تحديث العداد:', err);
+    }
+}
+
+async function loadStats() {
+    if (!supabaseClient) return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('stats')
+            .select('stat_type, count');
+        
+        if (error) throw error;
+        
+        data.forEach(stat => {
+            if (stat.stat_type === 'visitors') {
+                animateCounter('visitorsCount', stat.count);
+            } else if (stat.stat_type === 'downloads') {
+                animateCounter('downloadsCount', stat.count);
+            }
+        });
+    } catch (err) {
+        console.error('خطأ في تحميل الإحصائيات:', err);
+    }
+}
+
+function animateCounter(elementId, targetValue) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    const counter = element.querySelector('.counter');
+    if (!counter) return;
+    
+    const duration = 2000;
+    const start = 0;
+    const increment = targetValue / (duration / 16);
+    let current = start;
+    
+    const timer = setInterval(() => {
+        current += increment;
+        if (current >= targetValue) {
+            counter.textContent = targetValue.toLocaleString('ar-SA');
+            clearInterval(timer);
+        } else {
+            counter.textContent = Math.floor(current).toLocaleString('ar-SA');
+        }
+    }, 16);
+}
+
+// تسجيل زيارة عند تحميل الصفحة
+let visitorRecorded = false;
+async function recordVisitor() {
+    if (visitorRecorded) return;
+    visitorRecorded = true;
+    
+    const newCount = await incrementStat('visitors');
+    if (newCount) {
+        animateCounter('visitorsCount', newCount);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
 
     // ===========================
@@ -71,6 +154,10 @@ document.addEventListener('DOMContentLoaded', function () {
         setupVisualPicker();
         setupNameInput();
         setupDownloadBtn();
+        
+        // تحميل الإحصائيات وتسجيل الزيارة
+        loadStats();
+        setTimeout(recordVisitor, 1000);
     }
 
     // ===========================
@@ -213,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function () {
         downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحميل...';
         downloadBtn.disabled  = true;
 
-        setTimeout(() => {
+        setTimeout(async () => {
             try {
                 const dataUrl = canvas.toDataURL('image/png', 1.0);
                 const link    = document.createElement('a');
@@ -222,6 +309,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+                
+                // تسجيل التحميل في قاعدة البيانات
+                const newCount = await incrementStat('downloads');
+                if (newCount) {
+                    animateCounter('downloadsCount', newCount);
+                }
+                
                 showPopup('success', 'تم تحميل البطاقة بنجاح!');
             } catch (err) {
                 showPopup('error', 'حدث خطأ أثناء التحميل: ' + err.message);
