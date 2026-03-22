@@ -38,7 +38,7 @@
 
 @font-face {
     font-family: 'font';
-    src: url('alfont_com_IBMPlexSansArabic-SemiBold.ttf');
+    src: url('/IBMPlexSansArabic-Bold.ttf');
 }
 
 html { scroll-behavior: smooth; }
